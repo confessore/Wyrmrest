@@ -1,0 +1,16 @@
+[Unit]
+Description=Wyrmrest Discord Bot
+
+[Service]
+WorkingDirectory=/var/dotnetcore/Wyrmrest.Discord
+ExecStart=/usr/bin/dotnet /var/dotnetcore/Wyrmrest.Discord/Wyrmrest.Discord.dll
+Restart=always
+RestartSec=10
+SyslogIdentifier=wyrmrest.discord
+User=root
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+Environment=NAWSWoWDiscordToken=
+
+[Install]
+WantedBy=multi-user.target

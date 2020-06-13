@@ -1,0 +1,25 @@
+[Unit]
+Description=Wyrmrest Website
+
+[Service]
+WorkingDirectory=/var/dotnetcore/Wyrmrest.Web
+ExecStart=/usr/bin/dotnet /var/dotnetcore/Wyrmrest.Web/Wyrmrest.Web.dll
+Restart=always
+RestartSec=10
+SyslogIdentifier=wyrmrest.web
+User=root
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+Environment=DatabaseHost=
+Environment=DatabasePort=
+Environment=DatabaseUser=
+Environment=DatabasePass=
+Environment=SmtpHost=
+Environment=SmtpPort=
+Environment=SmtpName=
+Environment=SmtpEmail=
+Environment=SmtpUser=
+Environment=SmtpPass=
+
+[Install]
+WantedBy=multi-user.target

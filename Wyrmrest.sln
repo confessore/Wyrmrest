@@ -1,0 +1,56 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30104.148
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{92E55A15-DC82-4A14-9B38-B8EA012D6D16}"
+	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F1AF3574-8735-47B3-A174-15F962A0A486}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{5FF24C0B-5FDF-4C63-91A1-1C68E2A26943}"
+	ProjectSection(SolutionItems) = preProject
+		scripts\add_services.sh = scripts\add_services.sh
+		scripts\disable_services.sh = scripts\disable_services.sh
+		scripts\enable_services.sh = scripts\enable_services.sh
+		scripts\migrate_fresh.sh = scripts\migrate_fresh.sh
+		scripts\remove_services.sh = scripts\remove_services.sh
+		scripts\update.sh = scripts\update.sh
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{F93B4673-2A00-46CC-A3BC-9720C44DB13E}"
+	ProjectSection(SolutionItems) = preProject
+		scripts\services\wyrmrest.discord.service = scripts\services\wyrmrest.discord.service
+		scripts\services\wyrmrest.web.service = scripts\services\wyrmrest.web.service
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wyrmrest.Web", "src\Wyrmrest.Web\Wyrmrest.Web.csproj", "{01F5C9EE-EAAF-491C-81BB-D776FC5F7CF1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{01F5C9EE-EAAF-491C-81BB-D776FC5F7CF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01F5C9EE-EAAF-491C-81BB-D776FC5F7CF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01F5C9EE-EAAF-491C-81BB-D776FC5F7CF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01F5C9EE-EAAF-491C-81BB-D776FC5F7CF1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F1AF3574-8735-47B3-A174-15F962A0A486} = {92E55A15-DC82-4A14-9B38-B8EA012D6D16}
+		{5FF24C0B-5FDF-4C63-91A1-1C68E2A26943} = {92E55A15-DC82-4A14-9B38-B8EA012D6D16}
+		{F93B4673-2A00-46CC-A3BC-9720C44DB13E} = {5FF24C0B-5FDF-4C63-91A1-1C68E2A26943}
+		{01F5C9EE-EAAF-491C-81BB-D776FC5F7CF1} = {F1AF3574-8735-47B3-A174-15F962A0A486}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {052079E9-E3B9-416C-BF2B-8EE604B5FAAF}
+	EndGlobalSection
+EndGlobal

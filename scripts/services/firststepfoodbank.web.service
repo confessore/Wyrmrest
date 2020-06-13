@@ -1,0 +1,15 @@
+[Unit]
+Description=FirstStepFoodBank Website
+
+[Service]
+WorkingDirectory=/var/aspnetcore/FirstStepFoodBank.Web
+ExecStart=/usr/bin/dotnet /var/aspnetcore/FirstStepFoodBank.Web/FirstStepFoodBank.Web.dll
+Restart=always
+RestartSec=10
+SyslogIdentifier=firststepfoodbank.web
+User=root
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+
+[Install]
+WantedBy=multi-user.target
