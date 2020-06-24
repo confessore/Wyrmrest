@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
+using Wyrmrest.Web.Services.Interfaces;
+
 namespace Wyrmrest.Web.Areas.Identity.Pages.Account.Manage
 {
     public class ChangePasswordModel : PageModel
@@ -14,15 +13,18 @@ namespace Wyrmrest.Web.Areas.Identity.Pages.Account.Manage
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ILogger<ChangePasswordModel> _logger;
+        readonly IMariaService _maria;
 
         public ChangePasswordModel(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
-            ILogger<ChangePasswordModel> logger)
+            ILogger<ChangePasswordModel> logger,
+            IMariaService maria)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
+            _maria = maria;
         }
 
         [BindProperty]
@@ -88,6 +90,11 @@ namespace Wyrmrest.Web.Areas.Identity.Pages.Account.Manage
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
                 return Page();
+            }
+            else
+            {
+                if (await _maria.AccountExistsAsync(user.UserName))
+                    await _maria.UpdatePasswordAsync(user.UserName, Input.NewPassword);
             }
 
             await _signInManager.RefreshSignInAsync(user);

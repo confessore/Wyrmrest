@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using Wyrmrest.Web.Services.Interfaces;
 
 namespace Wyrmrest.Web.Areas.Identity.Pages.Account
 {
@@ -15,10 +16,14 @@ namespace Wyrmrest.Web.Areas.Identity.Pages.Account
     public class ConfirmEmailModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
+        readonly IMariaService _maria;
 
-        public ConfirmEmailModel(UserManager<IdentityUser> userManager)
+        public ConfirmEmailModel(
+            UserManager<IdentityUser> userManager,
+            IMariaService maria)
         {
             _userManager = userManager;
+            _maria = maria;
         }
 
         [TempData]
@@ -40,6 +45,11 @@ namespace Wyrmrest.Web.Areas.Identity.Pages.Account
             code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
             var result = await _userManager.ConfirmEmailAsync(user, code);
             StatusMessage = result.Succeeded ? "Thank you for confirming your email." : "Error confirming your email.";
+            if (result.Succeeded)
+            {
+                var id = await _maria.GetAccountIdAsync(user.NormalizedUserName);
+                await _maria.RemoveBanAsync(id);
+            }
             return Page();
         }
     }
