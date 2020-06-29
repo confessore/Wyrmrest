@@ -80,6 +80,9 @@ namespace Wyrmrest.Web.Services
             };
             command.Parameters.Add(paramUsername);
             command.Parameters.Add(paramPassword);
+            command.Parameters.Add(paramSessionkey);
+            command.Parameters.Add(paramV);
+            command.Parameters.Add(paramS);
             await command.ExecuteNonQueryAsync();
             connection.Close();
         }
