@@ -54,7 +54,7 @@ namespace Wyrmrest.Web.Services
 
         public async Task UpdatePasswordAsync(string username, string password)
         {
-            string sql = "UPDATE account SET sha_pass_hash = @password WHERE username = @username";
+            string sql = "UPDATE account SET sha_pass_hash = @password, sessionkey = @sessionkey, v = @v, s = @s WHERE username = @username";
             using MySqlConnection connection = new MySqlConnection(Strings.AuthConnectionString);
             connection.Open();
             using MySqlCommand command = new MySqlCommand(sql, connection);
@@ -65,6 +65,18 @@ namespace Wyrmrest.Web.Services
             var paramPassword = new MySqlParameter("password", MySqlDbType.VarChar)
             {
                 Value = await ComputeSHA1PassHash(username, password)
+            };
+            var paramSessionkey = new MySqlParameter("sessionkey", MySqlDbType.VarChar)
+            {
+                Value = string.Empty
+            };
+            var paramV = new MySqlParameter("v", MySqlDbType.VarChar)
+            {
+                Value = string.Empty
+            };
+            var paramS = new MySqlParameter("s", MySqlDbType.VarChar)
+            {
+                Value = string.Empty
             };
             command.Parameters.Add(paramUsername);
             command.Parameters.Add(paramPassword);
