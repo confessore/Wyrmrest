@@ -1,10 +1,14 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
-using Wyrmrest.Web.Services.Interfaces;
+using Wyrmrest.Web.Data;
 
 namespace Wyrmrest.Web.Areas.Identity.Pages.Account.Manage
 {
@@ -13,18 +17,18 @@ namespace Wyrmrest.Web.Areas.Identity.Pages.Account.Manage
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ILogger<ChangePasswordModel> _logger;
-        readonly IMariaService _maria;
+        readonly AuthDbContext _auth;
 
         public ChangePasswordModel(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
             ILogger<ChangePasswordModel> logger,
-            IMariaService maria)
+            AuthDbContext auth)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
-            _maria = maria;
+            _auth = auth;
         }
 
         [BindProperty]
@@ -93,8 +97,15 @@ namespace Wyrmrest.Web.Areas.Identity.Pages.Account.Manage
             }
             else
             {
-                if (await _maria.AccountExistsAsync(user.UserName))
-                    await _maria.UpdatePasswordAsync(user.UserName, Input.NewPassword);
+                if (await _auth.account.AnyAsync(x => x.Username == user.UserName.ToUpper()))
+                {
+                    var tmp = await _auth.account.FirstOrDefaultAsync(x => x.Username == user.UserName.ToUpper());
+                    tmp.SHA_Pass_Hash = await ComputeSHA1PassHashAsync(user.UserName, Input.NewPassword);
+                    tmp.SessionKey = string.Empty;
+                    tmp.V = string.Empty;
+                    tmp.S = string.Empty;
+                    await _auth.SaveChangesAsync();
+                }
             }
 
             await _signInManager.RefreshSignInAsync(user);
@@ -102,6 +113,12 @@ namespace Wyrmrest.Web.Areas.Identity.Pages.Account.Manage
             StatusMessage = "Your password has been changed.";
 
             return RedirectToPage();
+        }
+
+        Task<string> ComputeSHA1PassHashAsync(string username, string password)
+        {
+            var sha = new SHA1CryptoServiceProvider().ComputeHash(Encoding.UTF8.GetBytes($"{username.ToUpper()}:{password.ToUpper()}"));
+            return Task.FromResult(string.Concat(sha.Select(x => x.ToString("x2"))));
         }
     }
 }

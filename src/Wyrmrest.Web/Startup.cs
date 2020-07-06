@@ -6,13 +6,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using System;
-using System.Linq;
 using System.Text;
 using Wyrmrest.Web.Data;
 using Wyrmrest.Web.Services;
-using Wyrmrest.Web.Services.Interfaces;
 using Wyrmrest.Web.Statics;
 
 namespace Wyrmrest.Web
@@ -33,14 +30,15 @@ namespace Wyrmrest.Web
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseMySql(
                     Strings.DotNetConnectionString));
-            services.AddDefaultIdentity<IdentityUser>(options => 
+            services.AddDbContext<AuthDbContext>(options =>
+                options.UseMySql(
+                    Strings.AuthConnectionString));
+            services.AddDefaultIdentity<IdentityUser>(options =>
             {
-                options.SignIn.RequireConfirmedAccount = true;
                 options.User.RequireUniqueEmail = true;
             }).AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddRazorPages();
             services.AddTransient<IEmailSender, EmailSender>();
-            services.AddSingleton<IMariaService, MariaService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

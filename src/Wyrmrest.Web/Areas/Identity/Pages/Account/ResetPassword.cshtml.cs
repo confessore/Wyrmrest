@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -9,6 +10,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
+using Wyrmrest.Web.Data;
 
 namespace Wyrmrest.Web.Areas.Identity.Pages.Account
 {
@@ -16,10 +19,14 @@ namespace Wyrmrest.Web.Areas.Identity.Pages.Account
     public class ResetPasswordModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
+        readonly AuthDbContext _auth;
 
-        public ResetPasswordModel(UserManager<IdentityUser> userManager)
+        public ResetPasswordModel(
+            UserManager<IdentityUser> userManager,
+            AuthDbContext auth)
         {
             _userManager = userManager;
+            _auth = auth;
         }
 
         [BindProperty]
@@ -77,6 +84,15 @@ namespace Wyrmrest.Web.Areas.Identity.Pages.Account
             var result = await _userManager.ResetPasswordAsync(user, Input.Code, Input.Password);
             if (result.Succeeded)
             {
+                if (await _auth.account.AnyAsync(x => x.Username == user.UserName.ToUpper()))
+                {
+                    var tmp = await _auth.account.FirstOrDefaultAsync(x => x.Username == user.UserName.ToUpper());
+                    tmp.SHA_Pass_Hash = await ComputeSHA1PassHashAsync(user.UserName, Input.Password);
+                    tmp.SessionKey = string.Empty;
+                    tmp.V = string.Empty;
+                    tmp.S = string.Empty;
+                    await _auth.SaveChangesAsync();
+                }
                 return RedirectToPage("./ResetPasswordConfirmation");
             }
 
@@ -85,6 +101,12 @@ namespace Wyrmrest.Web.Areas.Identity.Pages.Account
                 ModelState.AddModelError(string.Empty, error.Description);
             }
             return Page();
+        }
+
+        Task<string> ComputeSHA1PassHashAsync(string username, string password)
+        {
+            var sha = new SHA1CryptoServiceProvider().ComputeHash(Encoding.UTF8.GetBytes($"{username.ToUpper()}:{password.ToUpper()}"));
+            return Task.FromResult(string.Concat(sha.Select(x => x.ToString("x2"))));
         }
     }
 }

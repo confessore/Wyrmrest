@@ -5,15 +5,17 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Wyrmrest.Web.Services.Interfaces;
+using Wyrmrest.Web.Data;
+using Wyrmrest.Web.Models;
 
 namespace Wyrmrest.Web.Areas.Identity.Pages.Account
 {
@@ -24,20 +26,20 @@ namespace Wyrmrest.Web.Areas.Identity.Pages.Account
         private readonly UserManager<IdentityUser> _userManager;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
-        readonly IMariaService _maria;
+        readonly AuthDbContext _auth;
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
             IEmailSender emailSender,
-            IMariaService maria)
+            AuthDbContext auth)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
-            _maria = maria;
+            _auth = auth;
         }
 
         [BindProperty]
@@ -87,12 +89,18 @@ namespace Wyrmrest.Web.Areas.Identity.Pages.Account
                 var result = await _userManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)
                 {
-                    if (!await _maria.AccountExistsAsync(Input.Username))
+                    if (!await _auth.account.AnyAsync(x => x.Username == Input.Username.ToUpper()))
                     {
-                        await _maria.CreateNewAccountAsync(Input.Username, Input.Password, 2);
-                        var id = await _maria.GetAccountIdAsync(Input.Username);
-                        if (!await _maria.BanExistsAsync(id))
-                            await _maria.AddBanAsync(id, (int)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds, int.MaxValue, "SYSTEM", "EMAIL CONFIRMATION", true);
+                        await _auth.account.AddAsync(new account()
+                        {
+                            Username = Input.Username.ToUpper(),
+                            SHA_Pass_Hash = await ComputeSHA1PassHashAsync(Input.Username, Input.Password),
+                            SessionKey = string.Empty,
+                            V = string.Empty,
+                            S = string.Empty,
+                            Expansion = 2
+                        });
+                        await _auth.SaveChangesAsync();
                     }
                     _logger.LogInformation("User created a new account with password.");
 
@@ -125,6 +133,12 @@ namespace Wyrmrest.Web.Areas.Identity.Pages.Account
 
             // If we got this far, something failed, redisplay form
             return Page();
+        }
+
+        Task<string> ComputeSHA1PassHashAsync(string username, string password)
+        {
+            var sha = new SHA1CryptoServiceProvider().ComputeHash(Encoding.UTF8.GetBytes($"{username.ToUpper()}:{password.ToUpper()}"));
+            return Task.FromResult(string.Concat(sha.Select(x => x.ToString("x2"))));
         }
     }
 }
